@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/AmlanJSarmah/ViteCPP/internal/cli"
+)
 
 func main() {
-	fmt.Println("Welcome to ViteCPP")
+	cli.Execute()
 }

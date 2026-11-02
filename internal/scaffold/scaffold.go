@@ -1,19 +1,18 @@
 package scaffold
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-var GITIGNORE = `build/
+const GITIGNORE = `build/
 compiler_commands.json
 .cache/
 `
 
-var CODE = `#include <iostream>
+const CODE = `#include <iostream>
 
 int main() {
 	std::cout << "Hello from ViteCpp" << std::endl;
@@ -21,7 +20,7 @@ int main() {
 }
 `
 
-var CMAKE = `cmake_minimum_required(VERSION 3.20)
+const CMAKE = `cmake_minimum_required(VERSION 3.20)
 
 # Project name (will match the directory or app name)
 project({{PROJECT_NAME}} LANGUAGES CXX)
@@ -42,28 +41,28 @@ add_executable({{PROJECT_NAME}}
 target_include_directories({{PROJECT_NAME}} PRIVATE include)
 `
 
-// Check if CMake Project already exists in current directory.
-func checkIfProjectAlreadyExist() (bool, error) {
+func checkIfProjectAlreadyExist(name string) error {
 	entries, err := os.ReadDir(".")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return false, errors.New("Failed to Read Contents of current directorys")
+		return fmt.Errorf("failed to read contents of current directorys %w", err)
 	}
 
 	for _, entry := range entries {
-		if entry.Name() == "CMakeLists.txt" {
-			return true, nil
+		if entry.Name() == "CMakeLists.txt" && name == "." {
+			return fmt.Errorf("project already initialized in current directory")
+		}
+		if entry.Name() == name {
+			return fmt.Errorf("directory with project Name already exists")
 		}
 	}
 
-	return false, nil
+	return nil
 }
 
 func constructProjectPaths(name string) (string, string, string, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return "", "", "", errors.New("Failed to get current directory name")
+		return "", "", "", fmt.Errorf("failed to get current directory name %w", err)
 	}
 	var rootPath string
 	var srcPath string
@@ -84,14 +83,12 @@ func constructProjectPaths(name string) (string, string, string, error) {
 func createDirectory(srcPath string, includePath string) error {
 	err := os.MkdirAll(srcPath, 0755)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return errors.New("Failed to create new directory ")
+		return fmt.Errorf("failed to create new directory %w", err)
 	}
 
 	err = os.MkdirAll(includePath, 0755)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return errors.New("Failed to create new directory")
+		return fmt.Errorf("failed to create new directory %w", err)
 	}
 	return nil
 }
@@ -99,42 +96,34 @@ func createDirectory(srcPath string, includePath string) error {
 func createTemplateFiles(rootPath string, srcPath string) error {
 	cMakeFilePath := filepath.Join(rootPath, "CMakeLists.txt")
 	projectName := filepath.Base(rootPath)
-	CMAKE = strings.ReplaceAll(CMAKE, "{{PROJECT_NAME}}", projectName)
-	cMakeContent := []byte(CMAKE)
+	updatedCmake := strings.ReplaceAll(CMAKE, "{{PROJECT_NAME}}", projectName)
+	cMakeContent := []byte(updatedCmake)
 	err := os.WriteFile(cMakeFilePath, cMakeContent, 0644)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return errors.New("Failed to create CMakeLists.txt")
+		return fmt.Errorf("failed to create CMakeLists.txt %w", err)
 	}
 
 	gitIgnoreFilePath := filepath.Join(rootPath, ".gitignore")
 	gitIgnoreContent := []byte(GITIGNORE)
 	err = os.WriteFile(gitIgnoreFilePath, gitIgnoreContent, 0644)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return errors.New("Failed to create .gitignore")
+		return fmt.Errorf("failed to create .gitignore %w", err)
 	}
 
 	codePath := filepath.Join(srcPath, "main.cpp")
 	codeContent := []byte(CODE)
 	err = os.WriteFile(codePath, codeContent, 0644)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return errors.New("Failed to create main.cpp")
+		return fmt.Errorf("failed to create main.cpp %w", err)
 	}
 
 	return nil
 }
 
 func CreateProject(name string) error {
-	if name == "." {
-		ifExist, err := checkIfProjectAlreadyExist()
-		if err != nil {
-			return err
-		}
-		if ifExist {
-			return errors.New("Project Already Exists in Current Directory")
-		}
+	err := checkIfProjectAlreadyExist(name)
+	if err != nil {
+		return err
 	}
 
 	projectRootPath, projectSrcPath, projectIncludePath, err := constructProjectPaths(name)

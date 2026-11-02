@@ -23,14 +23,14 @@ func displayHelpMenu() string {
 func Execute() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
 	var projectName string
-	createCmd.StringVar(&projectName, "name", ".", "New project name")
+	createCmd.StringVar(&projectName, "name", ".", "new project name")
 
 	packageCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	var packageName string
-	packageCmd.StringVar(&packageName, "package", "", "Package to add")
+	packageCmd.StringVar(&packageName, "package", "", "package to add")
 
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "ERROR: Not enough Arguments run `vitecpp help` for help")
+		fmt.Fprintln(os.Stderr, "ERROR: not enough arguments run `vitecpp help` for help")
 		os.Exit(1)
 	}
 
@@ -42,14 +42,14 @@ func Execute() {
 		createCmd.Parse(os.Args[2:])
 		err := scaffold.CreateProject(projectName)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "ERROR Creating project :", err)
+			fmt.Fprintln(os.Stderr, "ERROR creating project :", err)
 			os.Exit(1)
 		}
 
 	case "add":
 		packageCmd.Parse(os.Args[2:])
 		if packageName == "" {
-			fmt.Fprintln(os.Stderr, "ERROR: Package Name Not Provided")
+			fmt.Fprintln(os.Stderr, "ERROR: package name not provided")
 			os.Exit(1)
 		}
 		fmt.Println("Installing", packageName)
@@ -64,7 +64,7 @@ func Execute() {
 		fmt.Println("Building & Running...")
 
 	default:
-		fmt.Fprintln(os.Stderr, "ERROR : Invalid command run `vitecpp help` for help")
+		fmt.Fprintln(os.Stderr, "ERROR : invalid command run `vitecpp help` for help")
 		os.Exit(1)
 	}
 }

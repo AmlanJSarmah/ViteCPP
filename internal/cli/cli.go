@@ -4,13 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/AmlanJSarmah/ViteCPP/internal/scaffold"
 )
 
 func displayHelpMenu() string {
 	return `
   Welcome to ViteCPP!
 	run "vitecpp help" for help
-	run "vitecpp create -path=<path>" to create a new project.
+	run "vitecpp create -name=<name>" to create a new project.
 	run "vitecpp add -package=<package>" to add a library.
 	run "vitecpp build" to build the project.
 	run "vitecpp run" to run the executable.
@@ -20,18 +22,15 @@ func displayHelpMenu() string {
 
 func Execute() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
-	var projectPath string
-	createCmd.StringVar(&projectPath, "path", ".", "Path to new project")
+	var projectName string
+	createCmd.StringVar(&projectName, "name", ".", "New project name")
 
 	packageCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	var packageName string
 	packageCmd.StringVar(&packageName, "package", "", "Package to add")
 
 	if len(os.Args) < 2 {
-		_, err := fmt.Fprintln(os.Stderr, "ERROR: Not enough Arguments run `vitecpp help` for help")
-		if err != nil {
-			panic(err)
-		}
+		fmt.Fprintln(os.Stderr, "ERROR: Not enough Arguments run `vitecpp help` for help")
 		os.Exit(1)
 	}
 
@@ -41,15 +40,16 @@ func Execute() {
 
 	case "create":
 		createCmd.Parse(os.Args[2:])
-		fmt.Println("Creating Project At", projectPath)
+		err := scaffold.CreateProject(projectName)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "ERROR Creating project :", err)
+			os.Exit(1)
+		}
 
 	case "add":
 		packageCmd.Parse(os.Args[2:])
 		if packageName == "" {
-			_, err := fmt.Fprintln(os.Stderr, "ERROR: Package Name Not Provided")
-			if err != nil {
-				panic(err)
-			}
+			fmt.Fprintln(os.Stderr, "ERROR: Package Name Not Provided")
 			os.Exit(1)
 		}
 		fmt.Println("Installing", packageName)
@@ -64,10 +64,7 @@ func Execute() {
 		fmt.Println("Building & Running...")
 
 	default:
-		_, err := fmt.Fprintln(os.Stderr, "ERROR : Invalid command run `vitecpp help` for help")
-		if err != nil {
-			panic(err)
-		}
+		fmt.Fprintln(os.Stderr, "ERROR : Invalid command run `vitecpp help` for help")
 		os.Exit(1)
 	}
 }

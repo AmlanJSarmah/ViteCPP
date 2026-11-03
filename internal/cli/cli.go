@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AmlanJSarmah/ViteCPP/internal/builder"
 	"github.com/AmlanJSarmah/ViteCPP/internal/scaffold"
 )
 
@@ -56,6 +57,10 @@ func Execute() {
 
 	case "build":
 		fmt.Println("Building...")
+		err := builder.Build()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "ERROR building :", err)
+		}
 
 	case "run":
 		fmt.Println("Running...")

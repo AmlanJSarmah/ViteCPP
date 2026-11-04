@@ -25,14 +25,15 @@ func checkIfFileExists(file string) error {
 func executeCmakeBuild() error {
 	cmd := exec.Command("cmake", "-B", "build", "-S", ".")
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("errror running camke build %w", err)
 	}
 
 	cmd = exec.Command("cmake", "--build", "build")
-	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error running cmake %w", err)

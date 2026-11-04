@@ -41,7 +41,7 @@ add_executable({{PROJECT_NAME}}
 target_include_directories({{PROJECT_NAME}} PRIVATE include)
 `
 
-func checkIfProjectAlreadyExist(name string) error {
+func projectAlreadyExist(name string) error {
 	entries, err := os.ReadDir(".")
 	if err != nil {
 		return fmt.Errorf("failed to read contents of current directorys %w", err)
@@ -121,7 +121,7 @@ func createTemplateFiles(rootPath string, srcPath string) error {
 }
 
 func CreateProject(name string) error {
-	err := checkIfProjectAlreadyExist(name)
+	err := projectAlreadyExist(name)
 	if err != nil {
 		return err
 	}

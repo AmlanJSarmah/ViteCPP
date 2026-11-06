@@ -71,49 +71,41 @@ func getProjectName() (string, error) {
 	return filepath.Base(cwd), nil
 }
 
-func executeWindows() error {
-	projectName, err := getProjectName()
-	if err != nil {
-		return err
-	}
-	projectName = projectName + ".exe"
+func executeWindows(name string) error {
+	projectName := name + ".exe"
 	cmd := exec.Command(filepath.Join("build", projectName))
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("cannot run project %w", err)
 	}
 	return nil
 }
 
-func executeMacAndLinux() error {
-	projectName, err := getProjectName()
-	if err != nil {
-		return err
-	}
-	cmd := exec.Command(filepath.Join("build", projectName))
+func executeMacAndLinux(name string) error {
+	cmd := exec.Command(filepath.Join("build", name))
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("cannot run project %w", err)
 	}
 	return nil
 }
 
-func handleExecutionBasedOnOs(os string) error {
+func handleExecutionBasedOnOs(os string, name string) error {
 	switch os {
 	case "windows":
-		err := executeWindows()
+		err := executeWindows(name)
 		if err != nil {
 			return err
 		}
 		return nil
 	case "darwin", "linux":
-		err := executeMacAndLinux()
+		err := executeMacAndLinux(name)
 		if err != nil {
 			return err
 		}
@@ -123,8 +115,18 @@ func handleExecutionBasedOnOs(os string) error {
 	}
 }
 
-func Run() error {
-	err := handleExecutionBasedOnOs(runtime.GOOS)
+func Run(targetName ...string) error {
+	var name string
+	if len(targetName) > 0 && targetName[0] != "" {
+		name = targetName[0]
+	} else {
+		var err error
+		name, err = getProjectName()
+		if err != nil {
+			return err
+		}
+	}
+	err := handleExecutionBasedOnOs(runtime.GOOS, name)
 	if err != nil {
 		return err
 	}

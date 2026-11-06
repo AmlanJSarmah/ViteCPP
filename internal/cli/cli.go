@@ -13,10 +13,10 @@ func displayHelpMenu() string {
 	return `
   Welcome to ViteCPP!
 	run "vitecpp help" for help
-	run "vitecpp create -name=<name>" to create a new project.
+	run "vitecpp create [name]" to create a new project.
 	run "vitecpp add -package=<package>" to add a library.
 	run "vitecpp build" to build the project.
-	run "vitecpp run" to run the executable.
+	run "vitecpp run [name]" to run the executable.
 	run "vitecpp dev" to compile and run.
 `
 }
@@ -41,6 +41,9 @@ func Execute() {
 
 	case "create":
 		createCmd.Parse(os.Args[2:])
+		if createCmd.NArg() > 0 && projectName == "." {
+			projectName = createCmd.Arg(0)
+		}
 		err := scaffold.CreateProject(projectName)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ERROR creating project :", err)
@@ -65,7 +68,12 @@ func Execute() {
 
 	case "run":
 		fmt.Println("Running...")
-		err := builder.Run()
+		var err error
+		if len(os.Args) > 2 {
+			err = builder.Run(os.Args[2])
+		} else {
+			err = builder.Run()
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ERROR running :", err)
 			os.Exit(1)

@@ -60,13 +60,16 @@ func Execute() {
 		err := builder.Build()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "ERROR building :", err)
+			os.Exit(1)
 		}
 
 	case "run":
 		fmt.Println("Running...")
-
-	case "dev":
-		fmt.Println("Building & Running...")
+		err := builder.Run()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "ERROR running :", err)
+			os.Exit(1)
+		}
 
 	default:
 		fmt.Fprintln(os.Stderr, "ERROR : invalid command run `vitecpp help` for help")
